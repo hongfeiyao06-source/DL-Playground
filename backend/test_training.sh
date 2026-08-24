@@ -20,7 +20,7 @@ cd "$(dirname "$0")"
 
 BASE="${TRAINING_BASE:-http://localhost:8000}"
 PY="${PYTHON:-python}"
-command -v "$PY" >/dev/null 2>&1 || PY="D:/anaconda3/envs/dlbackend/python.exe"
+command -v "$PY" >/dev/null 2>&1 || PY="/d/anaconda3/envs/dlbackend/python.exe"
 
 TMP="$(mktemp -d)"
 RESP="$TMP/resp.json"
@@ -37,10 +37,10 @@ bad() { FAIL=$((FAIL + 1)); say "  [FAIL] $*"; }
 req() {
   local method="$1" path="$2" body="${3:-}"
   if [ -n "$body" ]; then
-    curl -s -o "$RESP" -w "%{http_code}" -X "$method" "$BASE$path" \
+    curl -s -o "$RESP" -w "%{http_code}" --noproxy "localhost,127.0.0.1" -X "$method" "$BASE$path" \
       -H "Content-Type: application/json" --data-binary "@$body"
   else
-    curl -s -o "$RESP" -w "%{http_code}" -X "$method" "$BASE$path"
+    curl -s -o "$RESP" -w "%{http_code}" --noproxy "localhost,127.0.0.1" -X "$method" "$BASE$path"
   fi
 }
 
@@ -141,7 +141,7 @@ fi
 
 say "== 6. model.pth download =="
 expect "GET /model       -> 200" 200 "$(req GET "/api/training/$TID/model")"
-curl -s -o "$MODELDL" "$BASE/api/training/$TID/model"
+curl -s -o "$MODELDL" --noproxy "localhost,127.0.0.1" "$BASE/api/training/$TID/model"
 SIZE=$(stat -c%s "$MODELDL" 2>/dev/null || echo 0)
 if [ "${SIZE:-0}" -gt 50000 ]; then
   ok "model.pth downloaded (${SIZE} bytes)"
