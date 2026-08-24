@@ -44,6 +44,47 @@ The frontend will be available at `http://localhost:7000`. Open this URL in your
 
 ---
 
+## Local Development (Run Without Docker Compose)
+
+For day-to-day development you can run the frontend and backend directly.
+
+### 1. Frontend (Vite dev server)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The dev server runs at Vite's default `http://localhost:5173`. It talks to the backend at `http://localhost:8000` (see `frontend/src/utils/traceService.ts`).
+
+### 2. Backend (FastAPI + TorchLens worker)
+
+```bash
+conda activate dlbackend          # py3.11 env with fastapi / uvicorn / docker
+cd backend
+uvicorn runner:app --host 0.0.0.0 --port 8000
+```
+
+The runner spawns a one-shot Docker container per trace, so build the worker image once first:
+
+```bash
+docker build -t torchlens-worker:latest ./backend/
+```
+
+### 3. DI-engine training service (`DING_PYTHON`)
+
+The RL training backend shells out to a **separate DI-engine interpreter** — the `dlbackend` process never imports `ding` directly. Its path is read from the `DING_PYTHON` environment variable and is **never hardcoded**.
+
+| Platform    | Default                                          |
+|-------------|--------------------------------------------------|
+| Windows     | `D:\anaconda3\envs\ding_env\python.exe`          |
+| Linux/macOS | `export DING_PYTHON=/path/to/ding_env/bin/python` |
+
+> ⚠️ This machine has two Anaconda installs. `ding_env` (DI-engine, py3.10) lives under `D:\anaconda3\envs\ding_env`; the backend uses the separate `dlbackend` (py3.11) env.
+
+---
+
 ## Key Features
 
 - **Visual Graph Editor**: Built with React Flow, allowing for intuitive drag-and-drop construction of models. Connect, arrange, and configure layers with ease.
