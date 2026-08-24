@@ -177,6 +177,8 @@ function FlowContent() {
                 showLiveCode={layout.showLiveCode}
                 modules={modSys.modules}
                 handleDeleteModule={modSys.handleDeleteModule}
+                nodes={nodes}
+                edges={edges}
             />
 
             <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
