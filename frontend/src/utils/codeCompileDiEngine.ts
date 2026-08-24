@@ -13,5 +13,8 @@ export function generateDiEngineModel(
   nodes: Node[],
   edges: Edge[]
 ): { model_code: string; obs_shape: number; action_shape: number } {
+  // Silence noUnusedParameters while keeping the runtime-only stub for T3.
+  void nodes;
+  void edges;
   throw new Error("not implemented, see T3");
 }
