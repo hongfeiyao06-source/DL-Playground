@@ -7,7 +7,11 @@ import tempfile
 import json
 import os
 
+from training_service import router as training_router
+
 app = FastAPI()
+
+app.include_router(training_router)
 
 app.add_middleware(
     CORSMiddleware,
