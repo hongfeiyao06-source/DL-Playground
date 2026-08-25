@@ -1,0 +1,57 @@
+{
+  "nodes": [
+    {
+      "id": "input_1",
+      "type": "input_layer",
+      "position": { "x": 0, "y": 0 },
+      "data": {
+        "modality": "tabular",
+        "dims": [
+          { "label": "B", "size": "1", "type": "batch" },
+          { "label": "F", "size": "4", "type": "feature" }
+        ]
+      }
+    },
+    {
+      "id": "fc1",
+      "type": "linear_layer",
+      "position": { "x": 220, "y": 0 },
+      "data": { "in_features": 4, "out_features": 32, "bias": true }
+    },
+    {
+      "id": "relu1",
+      "type": "relu_layer",
+      "position": { "x": 440, "y": 0 },
+      "data": {}
+    },
+    {
+      "id": "fc2",
+      "type": "linear_layer",
+      "position": { "x": 660, "y": 0 },
+      "data": { "in_features": 32, "out_features": 2, "bias": true }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "source": "input_1",
+      "target": "fc1",
+      "sourceHandle": "out-0",
+      "targetHandle": "in-0"
+    },
+    {
+      "id": "e2",
+      "source": "fc1",
+      "target": "relu1",
+      "sourceHandle": "out-0",
+      "targetHandle": "in-0"
+    },
+    {
+      "id": "e3",
+      "source": "relu1",
+      "target": "fc2",
+      "sourceHandle": "out-0",
+      "targetHandle": "in-0"
+    }
+  ]
+}
