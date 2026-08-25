@@ -39,7 +39,8 @@ export function CodePanel({
                     background: dragCodePanel ? "#64ffda55" : "#2a2a2a",
                     borderLeft: "1px solid #222",
                     position: "relative",
-                    zIndex: 10
+                    zIndex: 10,
+                    userSelect: "none",
                 }}
                 title="Drag to resize code panel"
             />
