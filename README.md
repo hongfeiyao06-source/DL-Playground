@@ -46,35 +46,55 @@ The frontend will be available at `http://localhost:7000`. Open this URL in your
 
 ## Local Development (Run Without Docker Compose)
 
-For day-to-day development you can run the frontend and backend directly.
+Run the frontend and backend directly. On Windows use **PowerShell** (not `bash` — the `bash` on this machine resolves to WSL, which cannot reach Windows `localhost`).
 
 ### 1. Frontend (Vite dev server)
 
-```bash
+```powershell
 cd frontend
-npm install
-npm run dev
+npm install          # first time only
+npm run dev          # if npm on PATH is broken, use: D:\nodejs\npm.cmd run dev
 ```
 
-The dev server runs at Vite's default `http://localhost:5173`. It talks to the backend at `http://localhost:8000` (see `frontend/src/utils/traceService.ts`).
+Runs at `http://localhost:5173`. It calls the training backend at `http://localhost:8000`.
 
-### 2. Backend (FastAPI + TorchLens worker)
+### 2. Backend — DI-engine training service (MVP)
 
-```bash
-conda activate dlbackend          # py3.11 env with fastapi / uvicorn / docker
+```powershell
+conda activate dlbackend          # py3.11 env with fastapi / uvicorn
 cd backend
-uvicorn runner:app --host 0.0.0.0 --port 8000
+uvicorn training_service:app --host 0.0.0.0 --port 8000
+```
+
+`training_service:app` is the standalone RL-training service (no Docker needed); it spawns training workers with `$DING_PYTHON`. Verify it's up:
+
+```powershell
+curl.exe http://localhost:8000/api/training/no_such_task/status   # expect 404
+```
+
+Acceptance test (PowerShell version — **not** `bash test_training.sh`, which breaks under WSL):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\test_training.ps1
+```
+
+### 3. Backend — original TorchLens trace service (optional)
+
+```powershell
+conda activate dlbackend
+cd backend
+uvicorn runner:app --host 0.0.0.0 --port 8000   # needs Docker daemon
 ```
 
 The runner spawns a one-shot Docker container per trace, so build the worker image once first:
 
-```bash
+```powershell
 docker build -t torchlens-worker:latest ./backend/
 ```
 
-### 3. DI-engine training service (`DING_PYTHON`)
+### 4. DI-engine training env (`DING_PYTHON`)
 
-The RL training backend shells out to a **separate DI-engine interpreter** — the `dlbackend` process never imports `ding` directly. Its path is read from the `DING_PYTHON` environment variable and is **never hardcoded**.
+The training service shells out to a **separate DI-engine interpreter** — the `dlbackend` process never imports `ding` directly. Its path is read from `DING_PYTHON` and is **never hardcoded**.
 
 | Platform    | Default                                          |
 |-------------|--------------------------------------------------|
@@ -82,6 +102,14 @@ The RL training backend shells out to a **separate DI-engine interpreter** — t
 | Linux/macOS | `export DING_PYTHON=/path/to/ding_env/bin/python` |
 
 > ⚠️ This machine has two Anaconda installs. `ding_env` (DI-engine, py3.10) lives under `D:\anaconda3\envs\ding_env`; the backend uses the separate `dlbackend` (py3.11) env.
+
+### 5. Browser workflow (MVP)
+
+1. Start backend (step 2) and frontend (step 1).
+2. Open `http://localhost:5173`.
+3. Drag an MLP: Input (set feature dim to `4`) → Linear(4→32) → ReLU → Linear(32→2).
+4. Open the sidebar **Training** panel → PPO + CartPole → **Start Training**.
+5. Watch the reward curve → **Download Model** when done (~1–2 min).
 
 ---
 
