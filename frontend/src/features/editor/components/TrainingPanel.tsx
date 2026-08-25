@@ -55,34 +55,54 @@ function statusLabel(status: TrainingStatus | null): string {
     return "Error";
 }
 
-function buildPolyline(
-    xs: number[],
-    ys: number[],
-    width: number,
-    height: number,
-    padding: number
-): string {
-    if (xs.length === 0 || ys.length === 0) return "";
-    const minX = xs[0];
-    const maxX = xs[xs.length - 1];
-    const minY = Math.min(...ys);
-    const maxY = Math.max(...ys);
-    const xSpan = maxX === minX ? 1 : maxX - minX;
-    const ySpan = maxY === minY ? 1 : maxY - minY;
+function niceStep(span: number, targetTicks: number): number {
+    if (span <= 0) return 1;
+    const raw = span / targetTicks;
+    const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const norm = raw / mag;
+    const nice = norm >= 5 ? 10 : norm >= 2 ? 5 : norm >= 1 ? 2 : 1;
+    return nice * mag;
+}
 
-    const points = xs.map((x, i) => {
-        const nx = padding + ((x - minX) / xSpan) * (width - 2 * padding);
-        const ny = padding + (1 - (ys[i] - minY) / ySpan) * (height - 2 * padding);
-        return `${nx},${ny}`;
-    });
-    return points.join(" ");
+function makeTicks(min: number, max: number, targetTicks: number): number[] {
+    const step = niceStep(max - min, targetTicks);
+    const ticks: number[] = [];
+    for (let v = Math.ceil(min / step) * step; v <= max + 1e-9; v += step) {
+        ticks.push(Number(v.toFixed(4)));
+    }
+    if (ticks.length === 0) ticks.push(min);
+    return ticks;
+}
+
+function formatTick(t: number): string {
+    return Number.isInteger(t) ? String(t) : t.toFixed(1);
 }
 
 function SvgCurve({ curve }: { curve: TrainingCurve }) {
-    const width = 260;
-    const height = 140;
-    const padding = 24;
-    const hasData = curve.iterations.length > 0 && curve.eval_rewards.length > 0;
+    const width = 280;
+    const height = 180;
+    const padL = 38;
+    const padR = 10;
+    const padT = 10;
+    const padB = 30;
+
+    const xs = curve.iterations;
+    const ys = curve.eval_rewards;
+    const hasData = xs.length > 0 && ys.length > 0;
+
+    const xMin = 0;
+    const xMax = Math.max(...xs, 1);
+    const yMin = 0;
+    const yMax = Math.max(...ys, 1);
+
+    const plotW = width - padL - padR;
+    const plotH = height - padT - padB;
+    const sx = (x: number) => padL + ((x - xMin) / (xMax - xMin)) * plotW;
+    const sy = (y: number) => padT + (1 - (y - yMin) / (yMax - yMin)) * plotH;
+
+    const xTicks = makeTicks(xMin, xMax, 5);
+    const yTicks = makeTicks(yMin, yMax, 5);
+    const points = xs.map((x, i) => `${sx(x)},${sy(ys[i])}`).join(" ");
 
     return (
         <div style={{
@@ -98,27 +118,35 @@ function SvgCurve({ curve }: { curve: TrainingCurve }) {
             <svg width={width} height={height} style={{ display: "block" }}>
                 {hasData ? (
                     <>
-                        <polyline
-                            fill="none"
-                            stroke={THEME.accent}
-                            strokeWidth={2}
-                            points={buildPolyline(curve.iterations, curve.eval_rewards, width, height, padding)}
-                        />
-                        <circle
-                            r={3}
-                            fill={THEME.accent}
-                            cx={padding}
-                            cy={padding + (1 - (curve.eval_rewards[0] - Math.min(...curve.eval_rewards)) / (Math.max(...curve.eval_rewards) - Math.min(...curve.eval_rewards))) * (height - 2 * padding)}
-                        />
+                        <line x1={padL} y1={sy(yMin)} x2={width - padR} y2={sy(yMin)} stroke={THEME.border} strokeWidth={1} />
+                        <line x1={padL} y1={padT} x2={padL} y2={sy(yMin)} stroke={THEME.border} strokeWidth={1} />
+                        {xTicks.map((t, i) => (
+                            <g key={`xt${i}`}>
+                                <line x1={sx(t)} y1={sy(yMin)} x2={sx(t)} y2={sy(yMin) + 4} stroke={THEME.border} strokeWidth={1} />
+                                <text x={sx(t)} y={sy(yMin) + 16} textAnchor="middle" fontSize="9" fill={THEME.textSecondary}>
+                                    {formatTick(t)}
+                                </text>
+                            </g>
+                        ))}
+                        {yTicks.map((t, i) => (
+                            <g key={`yt${i}`}>
+                                <line x1={padL - 4} y1={sy(t)} x2={padL} y2={sy(t)} stroke={THEME.border} strokeWidth={1} />
+                                <text x={padL - 8} y={sy(t) + 3} textAnchor="end" fontSize="9" fill={THEME.textSecondary}>
+                                    {formatTick(t)}
+                                </text>
+                            </g>
+                        ))}
+                        <text x={padL + plotW / 2} y={height - 6} textAnchor="middle" fontSize="9" fill={THEME.textSecondary}>
+                            iterations
+                        </text>
+                        <text x={14} y={padT + plotH / 2} textAnchor="middle" fontSize="9" fill={THEME.textSecondary} transform={`rotate(-90 14 ${padT + plotH / 2})`}>
+                            eval_reward
+                        </text>
+                        <polyline fill="none" stroke={THEME.accent} strokeWidth={2} points={points} />
+                        <circle r={3} fill={THEME.accent} cx={sx(xs[0])} cy={sy(ys[0])} />
                     </>
                 ) : (
-                    <text
-                        x={width / 2}
-                        y={height / 2}
-                        textAnchor="middle"
-                        fill={THEME.textSecondary}
-                        fontSize="12"
-                    >
+                    <text x={width / 2} y={height / 2} textAnchor="middle" fill={THEME.textSecondary} fontSize="12">
                         暂无数据
                     </text>
                 )}
