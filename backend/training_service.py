@@ -29,6 +29,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 BACKEND_DIR = Path(__file__).resolve().parent
@@ -404,4 +405,11 @@ def get_model(task_id: str):
 
 
 app = FastAPI(title="DL-Playground training service (T2)")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.include_router(router)
