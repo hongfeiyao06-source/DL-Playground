@@ -205,6 +205,17 @@ export function TrainingPanel(props: TrainingPanelProps) {
 
     const [generatedCodeOpen, setGeneratedCodeOpen] = useState(false);
 
+    const onDownloadGeneratedCode = () => {
+        if (!generatedModelCode) return;
+        const blob = new Blob([generatedModelCode], { type: "text/x-python" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "diengine_model.py";
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
     const onAlgorithmChange = (e: ChangeEvent<HTMLSelectElement>) => {
         const option = ALGORITHMS.find(o => o.value === e.target.value);
         if (option?.disabled) return;
@@ -502,26 +513,61 @@ export function TrainingPanel(props: TrainingPanelProps) {
                         borderRadius: "6px",
                         overflow: "hidden",
                     }}>
-                        <button
-                            onClick={() => setGeneratedCodeOpen(!generatedCodeOpen)}
-                            style={{
-                                width: "100%",
-                                padding: "8px 10px",
-                                background: "transparent",
-                                border: "none",
-                                color: THEME.textSecondary,
-                                fontSize: "12px",
-                                fontWeight: 600,
-                                textAlign: "left",
-                                cursor: "pointer",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                            }}
-                        >
-                            生成的 DI-engine 模型代码
-                            <ChevronIcon open={generatedCodeOpen} />
-                        </button>
+                        <div style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            padding: "8px 10px",
+                        }}>
+                            <button
+                                onClick={() => setGeneratedCodeOpen(!generatedCodeOpen)}
+                                style={{
+                                    background: "transparent",
+                                    border: "none",
+                                    color: THEME.textSecondary,
+                                    fontSize: "12px",
+                                    fontWeight: 600,
+                                    cursor: "pointer",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px",
+                                    padding: 0,
+                                }}
+                            >
+                                <ChevronIcon open={generatedCodeOpen} />
+                                生成的 DI-engine 模型代码
+                            </button>
+                            <div style={{ display: "flex", gap: "6px" }}>
+                                <button
+                                    onClick={() => navigator.clipboard.writeText(generatedModelCode)}
+                                    style={{
+                                        padding: "4px 8px",
+                                        fontSize: "11px",
+                                        cursor: "pointer",
+                                        background: THEME.itemBg,
+                                        color: THEME.textPrimary,
+                                        border: `1px solid ${THEME.border}`,
+                                        borderRadius: "4px",
+                                    }}
+                                >
+                                    Copy
+                                </button>
+                                <button
+                                    onClick={onDownloadGeneratedCode}
+                                    style={{
+                                        padding: "4px 8px",
+                                        fontSize: "11px",
+                                        cursor: "pointer",
+                                        background: THEME.itemBg,
+                                        color: THEME.textPrimary,
+                                        border: `1px solid ${THEME.border}`,
+                                        borderRadius: "4px",
+                                    }}
+                                >
+                                    Download
+                                </button>
+                            </div>
+                        </div>
                         {generatedCodeOpen && (
                             <div style={{ padding: "10px" }}>
                                 <div style={{ fontSize: "11px", color: THEME.textSecondary, marginBottom: "6px" }}>
