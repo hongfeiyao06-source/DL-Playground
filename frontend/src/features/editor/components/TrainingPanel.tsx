@@ -1,4 +1,4 @@
-import type { ChangeEvent } from "react";
+import { useState, type ChangeEvent } from "react";
 import type { TrainingCurve, TrainingStatus } from "../hooks/useTraining";
 
 const THEME = {
@@ -182,6 +182,9 @@ export type TrainingPanelProps = {
     canStop: boolean;
     isDone: boolean;
     modelDownloadUrl: string | null;
+    generatedModelCode: string | null;
+    generatedObsShape: number | null;
+    generatedActionShape: number | null;
 };
 
 export function TrainingPanel(props: TrainingPanelProps) {
@@ -197,7 +200,10 @@ export function TrainingPanel(props: TrainingPanelProps) {
         startTraining, stopTraining,
         canStart, canStop, isDone,
         modelDownloadUrl,
+        generatedModelCode, generatedObsShape, generatedActionShape,
     } = props;
+
+    const [generatedCodeOpen, setGeneratedCodeOpen] = useState(false);
 
     const onAlgorithmChange = (e: ChangeEvent<HTMLSelectElement>) => {
         const option = ALGORITHMS.find(o => o.value === e.target.value);
@@ -487,6 +493,60 @@ export function TrainingPanel(props: TrainingPanelProps) {
 
                 {/* Curve */}
                 <SvgCurve curve={curve} />
+
+                {/* Generated DI-engine model code */}
+                {generatedModelCode && (
+                    <div style={{
+                        background: THEME.bg,
+                        border: `1px solid ${THEME.border}`,
+                        borderRadius: "6px",
+                        overflow: "hidden",
+                    }}>
+                        <button
+                            onClick={() => setGeneratedCodeOpen(!generatedCodeOpen)}
+                            style={{
+                                width: "100%",
+                                padding: "8px 10px",
+                                background: "transparent",
+                                border: "none",
+                                color: THEME.textSecondary,
+                                fontSize: "12px",
+                                fontWeight: 600,
+                                textAlign: "left",
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                            }}
+                        >
+                            生成的 DI-engine 模型代码
+                            <ChevronIcon open={generatedCodeOpen} />
+                        </button>
+                        {generatedCodeOpen && (
+                            <div style={{ padding: "10px" }}>
+                                <div style={{ fontSize: "11px", color: THEME.textSecondary, marginBottom: "6px" }}>
+                                    obs_shape={generatedObsShape} · action_shape={generatedActionShape}
+                                </div>
+                                <pre style={{
+                                    margin: 0,
+                                    padding: "8px",
+                                    background: "#111",
+                                    border: `1px solid ${THEME.border}`,
+                                    borderRadius: "4px",
+                                    color: THEME.textPrimary,
+                                    fontSize: "10px",
+                                    lineHeight: 1.4,
+                                    overflowX: "auto",
+                                    maxHeight: "240px",
+                                    overflowY: "auto",
+                                    whiteSpace: "pre",
+                                }}>
+                                    {generatedModelCode}
+                                </pre>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Download */}
                 {isDone && modelDownloadUrl && (

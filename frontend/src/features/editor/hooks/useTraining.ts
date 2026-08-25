@@ -54,6 +54,9 @@ export function useTraining(nodes: Node[], edges: Edge[]) {
     const [loading, setLoading] = useState(false);
     const [backendAvailable, setBackendAvailable] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [generatedModelCode, setGeneratedModelCode] = useState<string | null>(null);
+    const [generatedObsShape, setGeneratedObsShape] = useState<number | null>(null);
+    const [generatedActionShape, setGeneratedActionShape] = useState<number | null>(null);
 
     const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const abortRef = useRef<AbortController | null>(null);
@@ -79,6 +82,9 @@ export function useTraining(nodes: Node[], edges: Edge[]) {
         setCurve(INITIAL_CURVE);
         setLoading(false);
         setError(null);
+        setGeneratedModelCode(null);
+        setGeneratedObsShape(null);
+        setGeneratedActionShape(null);
     }, [clearPolling]);
 
     const fetchStatus = useCallback(async (id: string) => {
@@ -159,6 +165,9 @@ export function useTraining(nodes: Node[], edges: Edge[]) {
                 modelCode = generated.model_code;
                 obsShape = generated.obs_shape;
                 actionShape = generated.action_shape;
+                setGeneratedModelCode(generated.model_code);
+                setGeneratedObsShape(generated.obs_shape);
+                setGeneratedActionShape(generated.action_shape);
             } catch (genErr) {
                 // Stub throws at runtime; surface a clear message without crashing.
                 const msg = genErr instanceof Error ? genErr.message : String(genErr);
@@ -267,6 +276,9 @@ export function useTraining(nodes: Node[], edges: Edge[]) {
         canStart,
         canStop,
         isDone,
+        generatedModelCode,
+        generatedObsShape,
+        generatedActionShape,
         modelDownloadUrl: taskId ? `${BASE_URL}/api/training/${taskId}/model` : null,
     };
 }
