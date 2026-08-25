@@ -203,6 +203,7 @@ export function TrainingPanel(props: TrainingPanelProps) {
         generatedModelCode, generatedObsShape, generatedActionShape,
     } = props;
 
+    const [trainingOpen, setTrainingOpen] = useState(true);
     const [generatedCodeOpen, setGeneratedCodeOpen] = useState(false);
 
     const onDownloadGeneratedCode = () => {
@@ -237,7 +238,7 @@ export function TrainingPanel(props: TrainingPanelProps) {
     return (
         <div style={{ marginTop: "20px" }}>
             <div
-                onClick={() => setHyperparamsOpen(!hyperparamsOpen)}
+                onClick={() => setTrainingOpen(!trainingOpen)}
                 style={{
                     display: "flex",
                     alignItems: "center",
@@ -248,17 +249,17 @@ export function TrainingPanel(props: TrainingPanelProps) {
                     fontWeight: 700,
                     textTransform: "uppercase",
                     letterSpacing: "0.5px",
-                    marginBottom: "10px",
+                    marginBottom: trainingOpen ? "10px" : "0px",
                 }}
                 onMouseEnter={e => e.currentTarget.style.color = THEME.textPrimary}
                 onMouseLeave={e => e.currentTarget.style.color = THEME.textSecondary}
             >
-                <ChevronIcon open={true} />
+                <ChevronIcon open={trainingOpen} />
                 Training
             </div>
 
             <div style={{
-                display: "flex",
+                display: trainingOpen ? "flex" : "none",
                 flexDirection: "column",
                 gap: "10px",
                 paddingLeft: "8px",
