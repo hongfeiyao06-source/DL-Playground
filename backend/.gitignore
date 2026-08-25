@@ -1,0 +1,5 @@
+# Runtime artifacts of the training service (T2): per-task training outputs.
+trained_models/
+
+# Bytecode caches (any subdirectory of backend/).
+__pycache__/
