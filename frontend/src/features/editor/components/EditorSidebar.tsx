@@ -1,5 +1,8 @@
+import type { Edge, Node } from "@xyflow/react";
 import type { SavedModule } from "../../../utils/moduleRegistry";
 import { useSidebarSystem } from "../hooks/useSidebarSystem";
+import { useTraining } from "../hooks/useTraining";
+import { TrainingPanel } from "./TrainingPanel";
 import logo2 from "../assets/sdslabs.png"; // Adjust the path to your file
 import logo1 from "../assets/dsg.png";
 
@@ -62,6 +65,8 @@ type EditorSidebarProps = {
     showLiveCode: boolean;
     modules: SavedModule[];
     handleDeleteModule: (id: string) => void;
+    nodes: Node[];
+    edges: Edge[];
 };
 
 export function EditorSidebar({
@@ -74,6 +79,8 @@ export function EditorSidebar({
     showLiveCode,
     modules,
     handleDeleteModule,
+    nodes,
+    edges,
 }: EditorSidebarProps) {
     const {
         searchQuery,
@@ -87,6 +94,8 @@ export function EditorSidebar({
         openModuleEditor,
         normalizedQuery
     } = useSidebarSystem(modules);
+
+    const training = useTraining(nodes, edges);
 
     const renderHeader = () => (
         <div style={{ padding: "16px", borderBottom: `1px solid ${THEME.border}` }}>
@@ -391,6 +400,9 @@ export function EditorSidebar({
                                     No nodes match "{searchQuery}"
                                 </div>
                             )}
+
+                            {/* 3. Training Panel */}
+                            <TrainingPanel {...training} />
                         </div>
 
                                 <div style={{ 
