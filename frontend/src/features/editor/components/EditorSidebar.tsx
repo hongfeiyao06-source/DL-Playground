@@ -424,13 +424,17 @@ export function EditorSidebar({
 
             {/* Resize Handle */}
             <div
-                onMouseDown={() => setDragSidebar(true)}
+                onMouseDown={(e) => {
+                    e.preventDefault();
+                    setDragSidebar(true);
+                }}
                 style={{
                     width: "4px",
                     cursor: "col-resize",
                     background: dragSidebar ? THEME.accent : "transparent",
                     transition: "background 0.2s",
-                    zIndex: 10
+                    zIndex: 10,
+                    userSelect: "none",
                 }}
                 onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
                 onMouseLeave={e => !dragSidebar && (e.currentTarget.style.background = "transparent")}
