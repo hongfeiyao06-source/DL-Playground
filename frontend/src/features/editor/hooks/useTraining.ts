@@ -169,10 +169,10 @@ export function useTraining(nodes: Node[], edges: Edge[]) {
                 setGeneratedObsShape(generated.obs_shape);
                 setGeneratedActionShape(generated.action_shape);
             } catch (genErr) {
-                // Stub throws at runtime; surface a clear message without crashing.
+                // Generator throws on invalid/unsupported graphs; surface a clear message.
                 const msg = genErr instanceof Error ? genErr.message : String(genErr);
                 setStatus("error");
-                setError(`Model generator not ready: ${msg}`);
+                setError(`Model generation failed: ${msg}`);
                 setLoading(false);
                 return;
             }

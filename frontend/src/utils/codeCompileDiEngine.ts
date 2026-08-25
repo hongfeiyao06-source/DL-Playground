@@ -22,6 +22,9 @@ export function generateDiEngineModel(
   edges: Edge[]
 ): { model_code: string; obs_shape: number; action_shape: number } {
   const topLevel = nodes.filter(n => !n.parentId);
+  if (topLevel.length === 0) {
+    throw new Error("Graph is empty — add an Input node and at least one Linear layer before training.");
+  }
   const byId = new Map(topLevel.map(n => [n.id, n]));
 
   const inDeg: Record<string, number> = {};
@@ -38,6 +41,9 @@ export function generateDiEngineModel(
   });
 
   const ordered = topologicalSort(topLevel, edges);
+  if (!ordered.some(n => n.type === "linear_layer")) {
+    throw new Error("Graph has no Linear layer — DI-engine MVP supports MLP (Input → Linear → activations → Linear) only.");
+  }
   const inputNodes = ordered.filter(n => inDeg[n.id] === 0);
   const outputNodes = ordered.filter(n => outDeg[n.id] === 0);
 
